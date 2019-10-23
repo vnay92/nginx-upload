@@ -95,16 +95,24 @@ RUN apt-get update && \
 
 RUN ln -s /usr/lib/nginx/modules /etc/nginx/modules
 
-WORKDIR /var/cache/nginx
+# Make sure that the logs are routed to console
+RUN ln -sf /dev/stdout /var/log/nginx/access.log && ln -sf /dev/stderr /var/log/nginx/error.log
 
-RUN touch /var/cache/nginx/client_temp
-
-# Configure filesystem to support running Nginx
-RUN useradd -ms /bin/bash nginx
+RUN mkdir -p /var/logs/nginx && \
+    mkdir -p /var/cache/nginx && \
+    mkdir -p /etc/nginx && \
+    mkdir -p /etc/nginx/conf.d && \
+    mkdir -p /tmp/uploads/1 && \
+    touch /var/cache/nginx/client_temp && \
+    useradd -ms /bin/bash nginx
 
 WORKDIR /etc/nginx
+COPY ./nginx.conf ./
 
-EXPOSE 80
+WORKDIR /etc/nginx/conf.d
+COPY ./default.conf ./
+
+EXPOSE 80 443
 
 STOPSIGNAL SIGTERM
 
